@@ -2,13 +2,13 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');  // ⭐ 추가
+const cors = require('cors');
 
 const app = express();
-const PORT = 5002;
+const PORT = process.env.PORT || 5002;  // ⭐ 중요!
 
-// 미들웨어 - 10번 줄에 추가
-app.use(cors());  // ⭐ CORS 설정 추가
+// 미들웨어
+app.use(cors());
 app.use(express.json());
 
 // MongoDB 연결
@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGOOSE_CONNECT, {
     console.error('MongoDB 연결 에러:', err);
   });
 
-// Todo 모델 정의 (간단한 예시)
+// Todo 모델
 const todoSchema = new mongoose.Schema({
   task: String,
   completed: { type: Boolean, default: false }
@@ -31,8 +31,7 @@ const todoSchema = new mongoose.Schema({
 
 const Todo = mongoose.model('Todo', todoSchema);
 
-// ⭐ API 라우트 추가
-// GET - 모든 할 일 가져오기
+// API 라우트
 app.get('/todos', async (req, res) => {
   try {
     const todos = await Todo.find();
@@ -42,7 +41,6 @@ app.get('/todos', async (req, res) => {
   }
 });
 
-// POST - 새 할 일 추가
 app.post('/todos', async (req, res) => {
   const todo = new Todo({
     task: req.body.task
@@ -56,7 +54,6 @@ app.post('/todos', async (req, res) => {
   }
 });
 
-// PUT - 할 일 수정
 app.put('/todos/:id', async (req, res) => {
   try {
     const todo = await Todo.findById(req.params.id);
@@ -73,7 +70,6 @@ app.put('/todos/:id', async (req, res) => {
   }
 });
 
-// DELETE - 할 일 삭제
 app.delete('/todos/:id', async (req, res) => {
   try {
     await Todo.findByIdAndDelete(req.params.id);
@@ -81,6 +77,11 @@ app.delete('/todos/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// 루트 경로 (테스트용)
+app.get('/', (req, res) => {
+  res.json({ message: 'Todo API is running!' });
 });
 
 // 서버 시작
